@@ -32,13 +32,16 @@ for _, letter in ipairs(letters) do
 				nodename = nodename .. "_glow"
 			end
 
+			local groups = {cracky = 3}
+			if glow > 0 then
+				groups.not_in_creative_inventory = 1
+			end
+
 			color_name_processed = string.gsub(color_name, "_", " ")
-			node_description = S("Letter ") .. string.upper(letter) ..
-				" (" .. S(color_name_processed) ..
-				(glow > 0 and S(", glowing") or "") .. ")"
 
 			core.register_node(nodename, {
-				description = node_description,
+				description = S("Letter ") .. string.upper(letter) ..
+					" (" .. S(color_name_processed) .. ")",
 				drawtype = "signlike",
 				tiles = {letter .. ".png^[multiply:" .. color_hex},
 				inventory_image = letter .. ".png^[multiply:" .. color_hex,
@@ -48,7 +51,17 @@ for _, letter in ipairs(letters) do
 				light_source = glow,
 				selection_box = {type = "wallmounted"},
 				legacy_wallmounted = true,
-				groups = {cracky=3}
+				groups = groups,
+				on_rightclick = function(pos, node, clicker, itemstack, pointed_thing)
+					local new_name
+					if node.name:find("_glow") then
+						new_name = node.name:gsub("_glow", "")
+					else
+						new_name = node.name .. "_glow"
+					end
+
+					core.swap_node(pos, {name = new_name, param2 = node.param2})
+				end
 			})
 		end
 	end
